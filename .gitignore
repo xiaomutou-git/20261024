@@ -1,0 +1,18 @@
+node_modules/
+.pnpm-store/
+dist/
+.vite/
+
+# 本地个人素材：社区成员的真实头像与照片，不随仓库公开
+image/
+image2/
+
+# 本地环境与密钥：任何情况下都不入库
+.env
+.env.*
+*.pem
+*.key
+
+*.log
+.DS_Store
+Thumbs.db
