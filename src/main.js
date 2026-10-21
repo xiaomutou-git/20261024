@@ -11,9 +11,13 @@
  * @module main
  */
 
+import { inject } from '@vercel/analytics';
 import { App, isWebGLAvailable } from './core/App.js';
 import { Hud } from './ui/hud.js';
 import { DEFAULT_THEME_ID, resolveTheme } from './config.js';
+
+// Initialize Vercel Web Analytics
+inject();
 
 /** @type {App|null} 全局三维应用实例，供快捷键与卸载钩子引用 */
 let app = null;
