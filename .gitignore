@@ -18,3 +18,4 @@ dist/
 Thumbs.db
 _rename-images.ps1
 _rename-mapping.json
+_compress-images.mjs
