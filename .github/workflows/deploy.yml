@@ -6,13 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
+  contents: write
 
 jobs:
   build:
@@ -36,24 +30,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # image/ 与 image2/ 目录随仓库入库，这里正常参与构建。
-      # 即使未来某个环境缺失，import.meta.glob 也会优雅降级。
       - name: Build
         run: pnpm build
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      # 使用 peaceiris/actions-gh-pages 把 dist/ 推到 gh-pages 分支。
+      # 仓库默认 Settings → Pages → Source 是 "Deploy from a branch / gh-pages / / (root)"，
+      # 不需要手动改任何设置就能立刻生效。
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: dist
-
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          publish_branch: gh-pages
+          force_orphan: true
