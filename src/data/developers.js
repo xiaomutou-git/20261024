@@ -31,7 +31,7 @@ function buildPlaceholderList(total) {
   return Object.freeze(
     Array.from({ length: total }, (_, i) => {
       const n = i + 1;
-      const name = `avatar_${n.ToString('000')}`;
+      const name = `avatar_${String(n).padStart(3, '0')}`;
       return {
         username: name,
         name,
