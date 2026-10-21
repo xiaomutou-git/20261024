@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#040C14" />
+    <meta
+      name="description"
+      content="TRAE 社区 1024 程序员节 3D 互动空间：1024 个体素方块拼成 2^10 的节日祝福，可拖拽、可点亮。"
+    />
+    <title>TRAE 社区 · 1024 程序员节</title>
+
+    <!-- 内联 SVG 图标：避免浏览器默认请求 /favicon.ico 产生 404 噪音 -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23040c14'/%3E%3Crect x='9' y='9' width='14' height='14' rx='3' fill='%2306b6d4'/%3E%3C/svg%3E"
+    />
+
+    <script>
+      /**
+       * 标记脚本可用状态：
+       * 1) 立即添加 js-ready，用于触发 HUD 入场动画；
+       * 2) 若主模块在 1000ms 内未就绪（加载失败 / 网络异常），回滚该标记，
+       *    保证此时所有文案与灯片均以静态可见状态呈现，不会停留在透明状态。
+       */
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js-ready');
+        window.setTimeout(function () {
+          if (!window.__traeAppReady) {
+            root.classList.remove('js-ready');
+          }
+        }, 1000);
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-BJsji8n7.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-PV8vuIq_.css">
+  </head>
+
+  <body>
+    <div class="stage" id="stage">
+      <!-- 三维画布：承载 1024 个体素方块，交互与动效发生在这里 -->
+      <canvas
+        class="stage__canvas"
+        id="scene-canvas"
+        role="img"
+        aria-label="由 1024 个方块拼成立体数字 1024 的三维互动场景，可拖拽旋转、点击点亮方块"
+      ></canvas>
+
+      <!-- 顶部品牌与场景控制 -->
+      <header class="topbar" id="topbar">
+        <div class="brand">
+          <span class="brand__mark" aria-hidden="true"></span>
+          <span class="brand__name">TRAE 社区</span>
+          <span class="brand__sep" aria-hidden="true"></span>
+          <span class="brand__event">1024 程序员节 · 2026</span>
+        </div>
+
+        <nav class="toolbar" aria-label="场景控制">
+          <div class="swatches" role="group" aria-label="配色主题">
+            <button class="swatch" type="button" data-theme="azure" title="科技青" aria-label="科技青主题"></button>
+            <button class="swatch" type="button" data-theme="matrix" title="矩阵绿" aria-label="矩阵绿主题"></button>
+            <button class="swatch" type="button" data-theme="amber" title="暖橙" aria-label="暖橙主题"></button>
+            <button class="swatch" type="button" data-theme="violet" title="霓虹紫" aria-label="霓虹紫主题"></button>
+            <button class="swatch" type="button" data-theme="paper" title="宣纸白" aria-label="宣纸白主题"></button>
+            <button class="swatch" type="button" data-theme="graphite" title="石墨灰" aria-label="石墨灰主题"></button>
+          </div>
+          <button class="btn" type="button" id="btn-replay">重播聚合</button>
+          <button class="btn" type="button" id="btn-pulse">点亮中心</button>
+          <button class="btn btn--panel" type="button" id="btn-community" aria-expanded="false" aria-controls="community-panel">
+            社区
+          </button>
+        </nav>
+      </header>
+
+      <!-- 主视觉文案：脚本失效时依然完整可见 -->
+      <section class="hero" id="hero" aria-label="活动说明">
+        <p class="hero__eyebrow">2<sup>10</sup> = 1024</p>
+        <h1 class="hero__title">向每一行代码致敬</h1>
+        <p class="hero__desc">
+          体素方块拼成社区标志，标志里的两只眼睛正是「1024」。四周环绕着社区伙伴的像素头像，拖拽旋转空间，点击任意方块，让能量从命中处扩散开来。
+        </p>
+      </section>
+
+      <!-- 底部状态栏 -->
+      <footer class="dock" id="dock">
+        <div class="dock__hint">
+          <span class="kbd">拖拽</span><span class="dock__text">旋转</span>
+          <span class="kbd">滚轮</span><span class="dock__text">缩放</span>
+          <span class="kbd">点击</span><span class="dock__text">点亮方块</span>
+          <span class="kbd">按住</span><span class="dock__text">凝聚成 TRAE</span>
+        </div>
+        <div class="dock__stats" id="dock-stats" aria-live="polite">
+          已点亮 <strong id="stat-count">0</strong> / <span id="stat-total">456</span> 个方块
+        </div>
+      </footer>
+
+      <!-- 社区内容抽屉：含「社区动态」与「社区比赛」两个标签页，内容由 hud.js 渲染 -->
+      <aside class="panel" id="community-panel" aria-label="TRAE 社区内容" hidden>
+        <div class="panel__head">
+          <div>
+            <h2 class="panel__title" id="panel-title">社区伙伴</h2>
+            <p class="panel__sub" id="panel-sub">forum.trae.cn · 分类 33</p>
+          </div>
+          <button class="panel__close" type="button" id="btn-close-panel" aria-label="关闭面板">×</button>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="社区内容切换">
+          <button
+            class="tab is-active"
+            type="button"
+            role="tab"
+            id="tab-topics"
+            data-tab="topics"
+            aria-selected="true"
+            aria-controls="pane-topics"
+          >
+            社区动态
+          </button>
+          <button
+            class="tab"
+            type="button"
+            role="tab"
+            id="tab-contests"
+            data-tab="contests"
+            aria-selected="false"
+            aria-controls="pane-contests"
+          >
+            社区比赛
+          </button>
+        </div>
+
+        <div class="tab-pane" id="pane-topics" role="tabpanel" aria-labelledby="tab-topics">
+          <ul class="topic-list" id="topic-list"></ul>
+          <a
+            class="panel__more"
+            id="panel-more"
+            href="https://forum.trae.cn/c/33-category/33"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            进入社区板块 →
+          </a>
+        </div>
+
+        <div class="tab-pane" id="pane-contests" role="tabpanel" aria-labelledby="tab-contests" hidden>
+          <ul class="contest-list" id="contest-list"></ul>
+          <a
+            class="panel__more"
+            id="contest-more"
+            href="https://forum.trae.cn/categories"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            查看全部赛事专区 →
+          </a>
+        </div>
+      </aside>
+
+      <!-- 首屏引导：主模块就绪后淡出移除 -->
+      <div class="boot" id="boot" role="status" aria-live="polite">
+        <span class="boot__spinner" aria-hidden="true"></span>
+        <span class="boot__text">正在生成 1024 个体素方块…</span>
+      </div>
+
+      <!-- 降级兜底：WebGL 不可用时展示的静态内容（默认隐藏，由 JS 触发显示） -->
+      <div class="fallback" id="fallback" hidden>
+        <div class="fallback__card">
+          <p class="fallback__eyebrow">2<sup>10</sup> = 1024</p>
+          <h2 class="fallback__title">TRAE 社区 · 1024 程序员节</h2>
+          <p class="fallback__desc">
+            当前浏览器未能启用 WebGL 三维渲染，因此这里呈现静态版本。
+            你依然可以了解本次社区活动：创作者计划招募、核心伙伴荣誉墙、贡献者激励与每周社区之星评选。
+          </p>
+          <ul class="fallback__facts">
+            <li><strong>2¹⁰ = 1024</strong><span>1KB = 1024 Byte，开发者节日的由来</span></li>
+            <li><strong>10.24</strong><span>每年 10 月 24 日，向每一行代码致敬</span></li>
+            <li><strong>1024 voxels</strong><span>互动版本由 1024 个方块拼合而成</span></li>
+          </ul>
+          <a class="fallback__link" href="https://forum.trae.cn/c/33-category/33" target="_blank" rel="noreferrer noopener">
+            前往 TRAE 社区
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <div class="noscript">
+        <h2>TRAE 社区 · 1024 程序员节</h2>
+        <p>当前浏览器禁用了 JavaScript，三维互动场景无法加载。你仍可访问 TRAE 社区了解本次节日活动。</p>
+        <p><a href="https://forum.trae.cn/c/33-category/33">forum.trae.cn · 社区伙伴</a></p>
+      </div>
+    </noscript>
+
+  </body>
+</html>
