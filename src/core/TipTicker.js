@@ -44,7 +44,7 @@ export class TipTicker {
   /**
    * @param {Object} options - 构造参数
    * @param {object} options.theme - 主题令牌对象，需包含 accent 字段作为文字颜色
-   * @param {ReadonlyArray<{user: string, tip: string}>} options.tips - 技巧列表
+   * @param {ReadonlyArray<string>} options.tips - 技巧正文列表
    * @param {{radius: number, maxY: number}} [options.bounds] - 头像墙的包围盒，用于把飘带定位在头像上方
    * @param {boolean} [options.mobile=false] - 是否移动端
    * @param {boolean} [options.reducedMotion=false] - 是否处于“减弱动效”模式
@@ -66,7 +66,7 @@ export class TipTicker {
     this.group = new THREE.Group();
     this.group.name = 'TipTicker';
 
-    /** @type {ReadonlyArray<{user: string, tip: string}>} 技巧列表 */
+    /** @type {ReadonlyArray<string>} 技巧正文列表 */
     this.tips = tips;
     /**
      * @type {Map<string, {texture: THREE.CanvasTexture, aspect: number}>}
@@ -169,8 +169,9 @@ export class TipTicker {
     const sprite = this._pool.find((item) => !item.userData.active);
     if (!sprite) return;
 
-    const entry = this.tips[this._cursor % this.tips.length];
-    const made = this._getTexture(entry.tip);
+    // 技巧数据只保留正文（不附带成员昵称），因此这里直接取字符串
+    const text = this.tips[this._cursor % this.tips.length];
+    const made = this._getTexture(text);
     if (!made) {
       this._cursor += 1;
       return;
