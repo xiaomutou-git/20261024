@@ -3,9 +3,9 @@ node_modules/
 dist/
 .vite/
 
-# 本地个人素材：社区成员的真实头像与照片，不随仓库公开
-image/
-image2/
+# 图片素材已脱敏（文件名为 avatar_XXX / photo_XXX），随仓库公开
+# image/
+# image2/
 
 # 本地环境与密钥：任何情况下都不入库
 .env
@@ -16,3 +16,5 @@ image2/
 *.log
 .DS_Store
 Thumbs.db
+_rename-images.ps1
+_rename-mapping.json
